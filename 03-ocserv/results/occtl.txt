@@ -1,0 +1,3 @@
+vpns0            UNKNOWN        10.20.20.1 peer 10.20.20.190/32 fe80::575a:1e48:7117:16cd/64 
+      id     user    vhost             ip         vpn-ip device   since    dtls-cipher    status
+    4198     otus  default   192.168.56.1   10.20.20.190  vpns0     6s  (AES-256-GCM) connected

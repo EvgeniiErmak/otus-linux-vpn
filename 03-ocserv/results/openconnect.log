@@ -1,0 +1,17 @@
+POST https://192.168.56.30/
+Connected to 192.168.56.30:443
+SSL negotiation with 192.168.56.30
+Connected to HTTPS on 192.168.56.30 with ciphersuite (TLS1.3)-(ECDHE-SECP256R1)-(RSA-PSS-RSAE-SHA256)-(AES-256-GCM)
+XML POST enabled
+Please enter your username.
+POST https://192.168.56.30/auth
+Please enter your password.
+POST https://192.168.56.30/auth
+Got CONNECT response: HTTP/1.1 200 CONNECTED
+CSTP connected. DPD 90, Keepalive 32400
+Established DTLS connection (using GnuTLS). Ciphersuite (DTLS1.2)-(PSK)-(AES-256-GCM).
+Configured as 10.20.20.190, with SSL connected and DTLS connected
+Continuing in background; pid 84330
+Using vhost-net for tun acceleration, ring size 32
+Send BYE packet: Aborted by caller
+User cancelled (SIGINT/SIGTERM); exiting.

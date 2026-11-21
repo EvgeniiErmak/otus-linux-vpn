@@ -4,3 +4,4 @@
 */ansible/files/
 *.key
 02-ras/client/*.crt
+03-ocserv/client/*.pem

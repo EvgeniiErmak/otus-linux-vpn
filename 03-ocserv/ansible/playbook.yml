@@ -1,0 +1,75 @@
+---
+- name: OpenConnect server (ocserv)
+  hosts: ocserv
+  become: true
+  vars:
+    server_ip: 192.168.56.30
+    vpn_network: 10.20.20.0
+    vpn_user: otus
+    vpn_pass: otus
+    ssl: /etc/ocserv/ssl
+  tasks:
+    - name: Install packages
+      ansible.builtin.apt:
+        name: [ocserv, gnutls-bin]
+        state: present
+        update_cache: true
+
+    - name: SSL directory
+      ansible.builtin.file:
+        path: "{{ ssl }}"
+        state: directory
+        mode: "0700"
+
+    - name: certtool templates
+      ansible.builtin.template:
+        src: "{{ item }}.j2"
+        dest: "{{ ssl }}/{{ item }}"
+        mode: "0600"
+      loop: [ca.tmpl, server.tmpl]
+
+    - name: CA key and self-signed certificate
+      ansible.builtin.shell: |
+        certtool --generate-privkey --outfile ca-key.pem
+        certtool --generate-self-signed --load-privkey ca-key.pem --template ca.tmpl --outfile ca-cert.pem
+      args: { chdir: "{{ ssl }}", creates: "{{ ssl }}/ca-cert.pem" }
+
+    - name: Server key and certificate signed by CA
+      ansible.builtin.shell: |
+        certtool --generate-privkey --outfile server-key.pem
+        certtool --generate-certificate --load-privkey server-key.pem \
+          --load-ca-certificate ca-cert.pem --load-ca-privkey ca-key.pem \
+          --template server.tmpl --outfile server-cert.pem
+      args: { chdir: "{{ ssl }}", creates: "{{ ssl }}/server-cert.pem" }
+      notify: Restart ocserv
+
+    - name: VPN user (ocpasswd format user:group:sha512-hash)
+      ansible.builtin.shell: >
+        printf '%s:*:%s\n' '{{ vpn_user }}' "$(openssl passwd -6 '{{ vpn_pass }}')"
+        > /etc/ocserv/ocpasswd && chmod 600 /etc/ocserv/ocpasswd
+      args: { creates: /etc/ocserv/ocpasswd }
+
+    - name: ocserv.conf
+      ansible.builtin.template:
+        src: ocserv.conf.j2
+        dest: /etc/ocserv/ocserv.conf
+        mode: "0644"
+      notify: Restart ocserv
+
+    - name: Start and enable ocserv
+      ansible.builtin.systemd:
+        name: ocserv
+        state: started
+        enabled: true
+
+    - name: Fetch CA certificate to host
+      ansible.builtin.fetch:
+        src: "{{ ssl }}/ca-cert.pem"
+        dest: "{{ playbook_dir }}/../client/ca-cert.pem"
+        flat: true
+
+  handlers:
+    - name: Restart ocserv
+      ansible.builtin.systemd:
+        name: ocserv
+        state: restarted
