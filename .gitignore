@@ -3,3 +3,4 @@
 # секреты и сертификаты не коммитим
 */ansible/files/
 *.key
+02-ras/client/*.crt
