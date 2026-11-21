@@ -1,0 +1,5 @@
+.vagrant/
+*.retry
+# секреты и сертификаты не коммитим
+*/ansible/files/
+*.key
